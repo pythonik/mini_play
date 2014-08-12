@@ -35,34 +35,37 @@ class Main(Thread):
 class Player(Thread):
     '''player thread'''
     LIBDIR = 'Music' 
-    def __init__(self, stop, pause):
+    def __init__(self, stop, pause, resume):
         self.lib = os.path.join(os.path.expanduser('~'), self.LIBDIR)
+        os.chdir(self.lib)
         self.song_list = glob.glob('*.mp3')
         self.stop = stop
+        self.pause = pause
+        self.resume = resume
         Thread.__init__(self)
     
     def run(self):
+        log.info('player..')
         for song in self.song_list:
             log.debug(song)
             if not self.single_replay(self.lib+'/'+song):
                 break
+        log.info(self.song_list)
     
     def stop(self):
         pass
     
-    def pause(self, single):
-        single.send_signal(signal.SIGSTOP)
-
     def single_replay(self, name):
         single = subprocess.Popen('afplay %s' % name, shell=True)
         log.debug(name)
         while single.poll() is None and not self.stop.is_set():
             if self.pause.is_set():
                 single.send_signal(signal.SIGSTOP)
+                log.info('sent pause')
                 self.resume.wait()
                 single.send_signal(signal.SIGCONT)
-
             time.sleep(0.001)
+        
         if self.stop.is_set():
             single.kill()
             return False
@@ -71,11 +74,11 @@ class Player(Thread):
 def main():
     pause = Event()
     stop = Event()
-    player = Player(stop, pause)
-    control = Main(player, stop, pause)
+    resume = Event()
+    player = Player(stop, pause, resume)
+    control = Main(player, stop, pause, resume)
     control.start()
     control.join()
-
 
 def daemonize():
     pid = os.fork()    
