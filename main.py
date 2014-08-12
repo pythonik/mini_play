@@ -9,8 +9,18 @@ import signal
 
 from threading import Event, Thread
 
-log.basicConfig(filename='debug.log',
-                level=log.DEBUG)
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+
+app_log = logging.getLogger('app')
+hdlr_app = logging.FileHandler('debug.log')
+hdlr_app.setFormatter(formatter)
+app_log.addHandler(hdlr_app)
+
+player_log = logging.getLogger('app')
+hdlr_player = logging.FileHandler('player.log')
+hdlr_player.setFormatter(formatter)
+player_log.addHandler(hdlr_player)
+
 
 class Main(Thread):
     '''this thread is created to listen to user input'''
@@ -45,23 +55,23 @@ class Player(Thread):
         Thread.__init__(self)
     
     def run(self):
-        log.info('player..')
+        app_log.info('player..')
         for song in self.song_list:
-            log.debug(song)
+            app_log.debug(song)
             if not self.single_replay(self.lib+'/'+song):
                 break
-        log.info(self.song_list)
+        app_log.info(self.song_list)
     
     def stop(self):
         pass
     
     def single_replay(self, name):
         single = subprocess.Popen('afplay %s' % name, shell=True)
-        log.debug(name)
+        app_log.debug(name)
         while single.poll() is None and not self.stop.is_set():
             if self.pause.is_set():
                 single.send_signal(signal.SIGSTOP)
-                log.info('sent pause')
+                app_log.info('sent pause')
                 self.resume.wait()
                 single.send_signal(signal.SIGCONT)
             time.sleep(0.001)
