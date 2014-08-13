@@ -9,15 +9,17 @@ import signal
 
 from threading import Event, Thread
 
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+formatter = log.Formatter('%(asctime)s %(levelname)s %(message)s')
 
-app_log = logging.getLogger('app')
-hdlr_app = logging.FileHandler('debug.log')
+app_log = log.getLogger('app')
+app_log.setLevel(log.DEBUG)
+hdlr_app = log.FileHandler('debug.log')
 hdlr_app.setFormatter(formatter)
 app_log.addHandler(hdlr_app)
 
-player_log = logging.getLogger('app')
-hdlr_player = logging.FileHandler('player.log')
+player_log = log.getLogger('app')
+player_log.setLevel(log.DEBUG)
+hdlr_player = log.FileHandler('player.log')
 hdlr_player.setFormatter(formatter)
 player_log.addHandler(hdlr_player)
 
