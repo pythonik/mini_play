@@ -1,7 +1,8 @@
 import curses
 def main():
 	win = curses.initscr()
-	win.addstr(0, 0, 'this a cool player')
+        dims = win.getmaxyx()
+	win.addstr(dims[0]/2, dims[1]/2, 'this a cool player')
 	win.refresh()
 	win.getch()
 	curses.endwin()
